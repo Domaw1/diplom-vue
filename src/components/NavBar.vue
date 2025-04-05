@@ -7,10 +7,10 @@
 
       <div class="search-bar">
         <input
-            type="text"
-            placeholder="Найти..."
-            v-model="searchQuery"
-            @keyup.enter="performSearch"
+          type="text"
+          placeholder="Найти..."
+          v-model="searchQuery"
+          @keyup.enter="performSearch"
         >
         <button class="search-button" @click="performSearch">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -21,12 +21,28 @@
       </div>
 
       <div class="actions">
-        <button class="action-btn" @click="router.push('/')">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 6H21V8H3V6ZM3 11H21V13H3V11ZM3 16H21V18H3V16Z" fill="currentColor"/>
-          </svg>
-          <span>Каталог</span>
-        </button>
+        <div class="catalog-wrapper">
+          <button class="action-btn" @click="toggleCatalogMenu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 6H21V8H3V6ZM3 11H21V13H3V11ZM3 16H21V18H3V16Z" fill="currentColor"/>
+            </svg>
+            <span>Каталог</span>
+          </button>
+          
+          <div v-if="isCatalogOpen" class="catalog-dropdown">
+            <div class="catalog-grid">
+              <router-link
+                v-for="category in categories.value"
+                :key="category.id"
+                :to="getCategoryLink(category)"
+                class="catalog-item"
+                @click="closeCatalogMenu"
+              >
+                <span>{{ category.name }}</span>
+              </router-link>
+            </div>
+          </div>
+        </div>
 
         <button class="action-btn" @click="goToProfile()">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -52,50 +68,56 @@
         </button>
       </div>
     </div>
-
-    <nav class="categories">
-      <a href="/" @click.prevent="router.push('/')" class="category-link">Все категории</a>
-      <a
-        href="#"
-        class="category-link"
-        v-for="category in categories.value"
-        :key="category.name"
-        :class="{ active: isActiveCategory(category.name) }"
-        @click.prevent="selectCategory(category.name)"
-      >
-        {{ category.name }}
-      </a>
-
-    </nav>
   </header>
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
-import router from "@/router";
-import {LoadCategories, LoadProducts} from "@/db/api";
-import { useRoute } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { LoadCategories } from "@/db/api";
+
+const router = useRouter();
+const route = useRoute();
 
 const searchQuery = ref('');
 const cartItemsCount = ref(0);
-
 const categories = ref([]);
-const route = useRoute();
+const isCatalogOpen = ref(false);
+const emits = defineEmits(["search-input"])
 
-const selectCategory = (subCategory) => {
-  router.push({ path: '/', query: { ...route.query, subCategory } });
+const toggleCatalogMenu = () => {
+  isCatalogOpen.value = !isCatalogOpen.value;
+};
+
+const closeCatalogMenu = () => {
+  isCatalogOpen.value = false;
+};
+
+const getCategoryLink = (category) => {
+  return { 
+    path: '/', 
+    query: { ...route.query, subCategory: category.name } 
+  };
 };
 
 const goToProfile = () => {
   if (localStorage.getItem('token')) {
-    router.push('/profile')
+    router.push('/profile');
   } else {
-    router.push('/auth')
+    router.push('/auth');
   }
-}
+};
 
-const isActiveCategory = (subCategory) => {
-  return route.query.subCategory === subCategory;
+const performSearch = () => {
+  if (searchQuery.value.trim()) {
+    router.push({ path: '/', query: { ...route.query, search: searchQuery.value } });
+    emits('filter-change'), {
+      input: searchQuery.value
+    }
+  }
+  else {
+    router.push({ path: '/' });
+  }
 };
 
 onMounted(async () => {
@@ -105,12 +127,6 @@ onMounted(async () => {
     console.error('Ошибка загрузки категорий:', error);
   }
 });
-
-const performSearch = () => {
-  if (searchQuery.value.trim()) {
-    console.log('Searching for:', searchQuery.value);
-  }
-};
 </script>
 
 <style scoped>
@@ -196,18 +212,6 @@ const performSearch = () => {
   height: 24px;
 }
 
-.category-link.active {
-  background-color: white;
-  color: #005BFF;
-  font-weight: bold;
-}
-
-.category-link.active:hover {
-  background-color: white;
-  color: #005BFF;
-  font-weight: bold;
-}
-
 .cart-btn {
   position: relative;
 }
@@ -228,29 +232,62 @@ const performSearch = () => {
   font-weight: bold;
 }
 
-.categories {
-  background-color: #0048D9;
-  padding: 12px 20px;
-  overflow-x: auto;
-  white-space: nowrap;
-  scrollbar-width: none;
+/* Стили для выпадающего меню каталога */
+.catalog-wrapper {
+  position: relative;
 }
 
-.categories::-webkit-scrollbar {
-  display: none;
+.catalog-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 300px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  padding: 16px;
+  margin-top: 8px;
+  animation: fadeIn 0.2s ease-out;
 }
 
-.category-link {
-  color: white;
-  text-decoration: none;
-  margin-right: 20px;
-  font-size: 14px;
-  padding: 4px 8px;
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.catalog-item {
+  padding: 8px 12px;
   border-radius: 4px;
+  color: #333;
+  text-decoration: none;
   transition: background-color 0.2s;
+  font-size: 14px;
 }
 
-.category-link:hover {
-  background-color: rgba(3, 3, 3, 0.242);
+.catalog-item:hover {
+  background-color: #f5f5f5;
+  color: #005BFF;
+}
+
+.dropdown-arrow {
+  margin-left: 4px;
+  transition: transform 0.2s;
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

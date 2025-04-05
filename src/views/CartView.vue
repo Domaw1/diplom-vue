@@ -115,7 +115,7 @@
   
   const increaseQuantity = async (item) => {
     try {
-      await cartService.updateItem(item.productVariant.id, item.quantity + 1);
+      await cartService.updateItem(item.productVariant.id, 1);
       item.quantity++;
     } catch (error) {
       console.error('Ошибка обновления количества:', error);
@@ -135,7 +135,7 @@
   
   const removeItem = async (item) => {
     try {
-      await cartService.removeItem(item.id);
+      await cartService.removeItemFromCart(item.id, item.quantity);
       cartItems.value = cartItems.value.filter(i => i.id !== item.id);
     } catch (error) {
       console.error('Ошибка удаления товара:', error);

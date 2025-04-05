@@ -5,6 +5,8 @@ import AuthComponent from '@/components/AuthComponent.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import CartView from '@/views/CartView.vue'
 import FavouritesView from '@/views/FavouritesView.vue'
+import ProductCard from '@/components/ProductCard.vue'
+import ProductView from '@/views/ProductView.vue'
 
 const routes = [
   {
@@ -31,6 +33,11 @@ const routes = [
     path: '/favourites',
     name: 'favourites',
     component: FavouritesView
+  },
+  {
+    path: '/product/:id',
+    name: 'product',
+    component: ProductView
   }
 ]
 

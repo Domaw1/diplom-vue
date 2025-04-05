@@ -209,7 +209,6 @@ const handlePriceChange = () => {
   updateFilters();
 };
 
-// Обновление фильтров и эмит события
 const updateFilters = () => {
   emit('filter-change', {
     brands: selectedBrands.value,

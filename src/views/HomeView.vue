@@ -1,5 +1,5 @@
 <template>
-  <nav-bar></nav-bar>
+  <nav-bar @search-input="applySearch"></nav-bar>
   <div class="home">
     <h1>Наши товары</h1>
     <div class="products-container">
@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { LoadProducts, fetchFilteredProducts } from "@/db/api";
 import ProductCard from "@/components/ProductCard.vue";
 import FilterComponent from "@/components/FilterComponent.vue";
@@ -35,27 +35,41 @@ const route = useRoute();
 const products = ref([]);
 const isProductsExist = ref(false);
 
+const applySearch = async () => {
+  const searchTerm = route.query.search?.toLowerCase() || '';
+  
+  if (searchTerm === '') {
+    products.value = await LoadProducts();
+    return;
+  }
+
+  products.value.value = products.value.value.filter(product =>
+    product.name.toLowerCase().includes(searchTerm) ||
+    (product.description && product.description.toLowerCase().includes(searchTerm))
+  );
+
+  isProductsExist.value = products.value.value.length === 0;
+};
+
 const handleFilterChange = async (filters) => {
   try {
     if (route.query.subCategory) {
       filters.subCategory = route.query.subCategory;
     }
     products.value = await fetchFilteredProducts(filters);
-    if(products.value.value.length === 0) {
-        isProductsExist.value = true;
-    }
-    else {
-      isProductsExist.value = false;
-    }
+    if(route.query.search)
+      applySearch();
   } catch (error) {
     console.error('Ошибка фильтрации:', error);
   }
 };
 
 watch(() => route.query.subCategory, () => {
-  handleFilterChange({
-    subCategory: route.query.subCategory
-  });
+  handleFilterChange({ subCategory: route.query.subCategory });
+});
+
+watch(() => route.query.search, () => {
+  applySearch();
 });
 
 onMounted(async () => {
@@ -64,17 +78,16 @@ onMounted(async () => {
     if (route.query.subCategory) {
       filters.subCategory = route.query.subCategory;
       products.value = await fetchFilteredProducts(filters);
-      if(products.value.value.length === 0) {
-        isProductsExist.value = true;
-      }
-    }
-    else {
+    } else {
       products.value = await LoadProducts();
     }
+
+    // applySearch();
   } catch (error) {
     console.error('Ошибка загрузки товаров:', error);
   }
 });
+
 </script>
 
 <style scoped>
@@ -107,16 +120,5 @@ onMounted(async () => {
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
   padding: 20px 0;
-}
-
-@media (max-width: 768px) {
-  .products-container {
-    flex-direction: column;
-  }
-
-  .filters-column {
-    width: 100%;
-    position: static;
-  }
 }
 </style>

@@ -51,6 +51,7 @@
                     >
                   <div class="product-info">
                     <h3>{{ item.productVariant.product.name }}</h3>
+                    <p>{{ item.productVariant.product.description }}</p>
                     <p>{{ item.quantity }} × {{ item.productVariant.product.price }} ₽</p>
                   </div>
                 </div>
@@ -188,7 +189,7 @@
   }
   
   .order-card {
-    border: 1px solid #eee;
+    border: 1px solid #005BFF;
     border-radius: 8px;
     overflow: hidden;
   }
@@ -199,7 +200,7 @@
     align-items: center;
     padding: 1rem;
     background-color: #f9f9f9;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #005BFF;
     flex-wrap: wrap;
     gap: 0.5rem;
   }
@@ -245,7 +246,6 @@
     gap: 1rem;
     padding: 0.5rem 0;
     align-items: center;
-    border-bottom: 1px solid black;
   }
   
   .product-image {

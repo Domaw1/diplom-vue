@@ -16,20 +16,26 @@ export const cartService = {
     }
   },
 
-  async updateItem(itemId, quantity) {
+  async updateItem(itemId, count) {
     try {
-      await axios.post(`${API_URL}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        data: {
+        const token = localStorage.getItem('token');
+        const response = await axios.post(
+          `${API_URL}/post`,
+          {
             productVariantId: itemId,
-            quantity: quantity
-        }
-      });
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Ошибка обновления товара');
-    }
+            quantity: count
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        return response.data;
+      } catch (error) {
+        throw new Error(error.response?.data?.message || 'Ошибка обновления товара');
+      }
   },
 
   async removeItem(itemId) {
@@ -47,9 +53,25 @@ export const cartService = {
     }
   },
 
+  async removeItemFromCart(itemId, quantity) {
+    try {
+      await axios.delete(`${API_URL}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        data: {
+            productVariantId: itemId,
+            quantity: quantity
+        }
+      });
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Ошибка удаления товара');
+    }
+  },
+
   async clearCart() {
     try {
-      await axios.delete(API_URL, {
+      await axios.delete(`${API_URL}/clear`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }

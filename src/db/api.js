@@ -15,6 +15,17 @@ export const LoadProducts = async () => {
     return data;
 }
 
+export const LoadProductById = async (productId) => {
+    try {
+        const response = await axios.get(`http://localhost:8080/api/v1/products/${productId}`);
+        return response.data;
+    } catch (exc) {
+        console.error("Ошибка при получении продукта по ID:", exc);
+        throw exc;
+    }
+};
+
+
 export const LoadCategories = async () => {
     let data = ref([]);
     axios.get("http://localhost:8080/api/v1/category").then(response => {

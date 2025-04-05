@@ -1,5 +1,5 @@
 <template>
-  <div class="product-card">
+  <div class="product-card" @click="goToProductView(product.id)">
     <div class="product-image">
       <img
           v-if="product.imageUrls && product.imageUrls.length > 0"
@@ -27,9 +27,14 @@
 </template>
 
 <script setup>
+import router from '@/router';
 import { computed } from 'vue';
 
 const props = defineProps(["product"]);
+
+const goToProductView = (productId) => {
+  router.push({name: 'product', params: {id: productId}});
+}
 
 const formattedPrice = computed(() => {
   return new Intl.NumberFormat('ru-RU', {
