@@ -80,6 +80,9 @@ export const fetchFilteredProducts = async (filters) => {
     if (filters.sizes?.length) {
       params.append('size', filters.sizes.join(','));
     }
+    if(filters.subCategory) {
+        params.append('subCategory', filters.subCategory);
+    }
     if (filters.minPrice) {
       params.append('minPrice', filters.minPrice);
     }

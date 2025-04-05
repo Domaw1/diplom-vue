@@ -108,7 +108,6 @@ import { LoadBrands, LoadColors, LoadSizes } from "@/db/api";
 
 const emit = defineEmits(['filter-change']);
 
-// Константы и состояния
 const minPrice = ref(0);
 const maxPrice = ref(20000);
 const priceRange = ref([0, 20000]);
@@ -116,12 +115,12 @@ const brandSearch = ref('');
 
 const priceRanges = [
   { label: "до 1 000 ₽", min: 0, max: 1000 },
-  { label: "1 000–1 500 ₽", min: 1000, max: 1500 },
-  { label: "1 500–2 000 ₽", min: 1500, max: 2000 },
-  { label: "2 000 ₽ и дороже", min: 2000, max: Infinity }
+  { label: "1 000–2 500 ₽", min: 1000, max: 2500 },
+  { label: "2 500–5 000 ₽", min: 2500, max: 5000 },
+  { label: "5 000 ₽ и дороже", min: 5000, max: Infinity },
+  { label: "Неважно", min: 0, max: Infinity }
 ];
 
-// Данные фильтров
 const brands = ref([]);
 const availableColors = ref([]);
 const sizes = ref([]);

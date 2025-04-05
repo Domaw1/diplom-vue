@@ -1,4 +1,5 @@
 <template>
+  <nav-bar></nav-bar>
   <div class="home">
     <h1>Наши товары</h1>
     <div class="products-container">
@@ -6,7 +7,10 @@
         <filter-component @filter-change="handleFilterChange"></filter-component>
       </div>
 
-      <div class="products-column">
+      <div v-if="isProductsExist">
+          <h1 style="color: red;">Кажется, здесь пусто...</h1>
+      </div>
+      <div v-else class="products-column">
         <div class="products-grid">
           <product-card
               v-for="product in products.value"
@@ -20,24 +24,53 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { LoadProducts, fetchFilteredProducts } from "@/db/api";
 import ProductCard from "@/components/ProductCard.vue";
 import FilterComponent from "@/components/FilterComponent.vue";
+import { useRoute } from 'vue-router';
+import NavBar from "@/components/NavBar.vue";
 
+const route = useRoute();
 const products = ref([]);
+const isProductsExist = ref(false);
 
 const handleFilterChange = async (filters) => {
   try {
+    if (route.query.subCategory) {
+      filters.subCategory = route.query.subCategory;
+    }
     products.value = await fetchFilteredProducts(filters);
+    if(products.value.value.length === 0) {
+        isProductsExist.value = true;
+    }
+    else {
+      isProductsExist.value = false;
+    }
   } catch (error) {
     console.error('Ошибка фильтрации:', error);
   }
 };
 
+watch(() => route.query.subCategory, () => {
+  handleFilterChange({
+    subCategory: route.query.subCategory
+  });
+});
+
 onMounted(async () => {
   try {
-    products.value = await LoadProducts();
+    const filters = {};
+    if (route.query.subCategory) {
+      filters.subCategory = route.query.subCategory;
+      products.value = await fetchFilteredProducts(filters);
+      if(products.value.value.length === 0) {
+        isProductsExist.value = true;
+      }
+    }
+    else {
+      products.value = await LoadProducts();
+    }
   } catch (error) {
     console.error('Ошибка загрузки товаров:', error);
   }

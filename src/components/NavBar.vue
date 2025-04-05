@@ -28,7 +28,7 @@
           <span>Каталог</span>
         </button>
 
-        <button class="action-btn" @click="router.push('/profile')">
+        <button class="action-btn" @click="goToProfile()">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" fill="currentColor"/>
             <path d="M12 14C7.58172 14 4 17.5817 4 22H20C20 17.5817 16.4183 14 12 14Z" fill="currentColor"/>
@@ -36,7 +36,7 @@
           <span>Профиль</span>
         </button>
 
-        <button class="action-btn" @click="router.push('/favorites')">
+        <button class="action-btn" @click="router.push('/favourites')">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.03L12 21.35Z" fill="currentColor"/>
           </svg>
@@ -54,8 +54,18 @@
     </div>
 
     <nav class="categories">
-      <a href="/" class="category-link">Все категории</a>
-      <a href="#" class="category-link" v-for="category in categories.value" :key="category.name">{{ category.name }}</a>
+      <a href="/" @click.prevent="router.push('/')" class="category-link">Все категории</a>
+      <a
+        href="#"
+        class="category-link"
+        v-for="category in categories.value"
+        :key="category.name"
+        :class="{ active: isActiveCategory(category.name) }"
+        @click.prevent="selectCategory(category.name)"
+      >
+        {{ category.name }}
+      </a>
+
     </nav>
   </header>
 </template>
@@ -64,18 +74,35 @@
 import {onMounted, ref} from 'vue';
 import router from "@/router";
 import {LoadCategories, LoadProducts} from "@/db/api";
+import { useRoute } from 'vue-router';
 
 const searchQuery = ref('');
 const cartItemsCount = ref(0);
 
 const categories = ref([]);
+const route = useRoute();
 
+const selectCategory = (subCategory) => {
+  router.push({ path: '/', query: { ...route.query, subCategory } });
+};
+
+const goToProfile = () => {
+  if (localStorage.getItem('token')) {
+    router.push('/profile')
+  } else {
+    router.push('/auth')
+  }
+}
+
+const isActiveCategory = (subCategory) => {
+  return route.query.subCategory === subCategory;
+};
 
 onMounted(async () => {
   try {
     categories.value = await LoadCategories();
   } catch (error) {
-    console.error('Ошибка загрузки товаров:', error);
+    console.error('Ошибка загрузки категорий:', error);
   }
 });
 
@@ -169,6 +196,18 @@ const performSearch = () => {
   height: 24px;
 }
 
+.category-link.active {
+  background-color: white;
+  color: #005BFF;
+  font-weight: bold;
+}
+
+.category-link.active:hover {
+  background-color: white;
+  color: #005BFF;
+  font-weight: bold;
+}
+
 .cart-btn {
   position: relative;
 }
@@ -212,33 +251,6 @@ const performSearch = () => {
 }
 
 .category-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-@media (max-width: 768px) {
-  .navbar-container {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .logo {
-    font-size: 24px;
-    margin-right: 10px;
-  }
-
-  .search-bar {
-    order: 3;
-    width: 100%;
-    margin-top: 10px;
-  }
-
-  .actions {
-    margin-left: auto;
-    gap: 8px;
-  }
-
-  .action-btn span {
-    display: none;
-  }
+  background-color: rgba(3, 3, 3, 0.242);
 }
 </style>
