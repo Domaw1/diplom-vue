@@ -27,5 +27,24 @@ export const userService = {
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Ошибка загрузки заказов');
     }
-  }
+  },
+
+  async makeOrder() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post(
+          `${API_URL}/order`,
+          {},
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Ошибка создания заказа');
+    }
+}
 };

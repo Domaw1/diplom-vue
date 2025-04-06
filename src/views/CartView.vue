@@ -77,11 +77,9 @@
   
   <script setup>
   import { ref, computed, onMounted } from 'vue';
-  import { useRouter } from 'vue-router';
   import NavBar from '@/components/NavBar.vue';
   import { cartService } from '@/services/cartService';
-  
-  const router = useRouter();
+  import { userService } from '@/services/userService';
   
   const cartItems = ref([]);
   const loading = ref(true);
@@ -151,8 +149,13 @@
     }
   };
   
-  const checkout = () => {
-    router.push('/checkout');
+  const checkout = async () => {
+    try {
+      await userService.makeOrder();
+      cartItems.value = [];
+    } catch (error) {
+      console.error('Ошибка оформления заказа:', error);
+    }
   };
   </script>
   

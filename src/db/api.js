@@ -77,6 +77,29 @@ export const LoadColors = async () => {
     return data;
 }
 
+export const AddReview = async (productId, comment, rating) => {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post(`http://localhost:8080/api/v1/reviews`,
+            {   
+                productId: productId,
+                comment: comment,
+                rating: rating
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response.data;
+    } catch (exc) {
+        console.error("Ошибка при добавления отзыва:", exc);
+        throw exc;
+    }
+}
+
 export const fetchFilteredProducts = async (filters) => {
   try {
     let data = ref([])

@@ -25,7 +25,6 @@
           <div class="filter-group">
             <label>Сортировка:</label>
             <select v-model="sortOption" @change="sortFavorites">
-              <option value="date">По дате добавления</option>
               <option value="price-asc">По возрастанию цены</option>
               <option value="price-desc">По убыванию цены</option>
             </select>
@@ -39,7 +38,7 @@
                 <path d="M6 18L18 6M6 6L18 18" stroke="#FF4444" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </button>
-            <router-link :to="'/'" class="product-link">
+            <router-link :to="`/product/${item.id}`" class="product-link">
               <div class="product-image">
                 <img 
                   v-if="item.imageUrls && item.imageUrls.length > 0"
@@ -56,7 +55,7 @@
                 </div>
               </div>
             </router-link>
-            <button @click="addToCart(item)" class="add-to-cart">
+            <button @click="router.push(`/product/${item.id}`)" class="add-to-cart">
               В корзину
             </button>
           </div>
@@ -71,6 +70,7 @@ import { ref, onMounted } from 'vue';
 import NavBar from '@/components/NavBar.vue';
 import { favoritesService } from '@/services/favoriteService';
 import { cartService } from '@/services/cartService';
+import router from '@/router';
 
 const favorites = ref([]);
 const loading = ref(true);

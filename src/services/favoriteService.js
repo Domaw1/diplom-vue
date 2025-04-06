@@ -23,13 +23,11 @@ export const favoritesService = {
       const token = localStorage.getItem('token');
       const response = await axios.post(
         API_URL,
+        { productId: productId },
         {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
-          },
-          data: {
-            productId: productId
           }
         }
       );
@@ -39,17 +37,15 @@ export const favoritesService = {
     }
   },
 
-  async removeFavorite(itemId) {
+  async removeFavorite(productId) {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}`, {
+      await axios.delete(API_URL, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        data: {
-            productId: itemId
-        }
+        data: { productId: productId }
       });
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Ошибка удаления из избранного');
