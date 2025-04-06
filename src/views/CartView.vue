@@ -80,6 +80,7 @@
   import NavBar from '@/components/NavBar.vue';
   import { cartService } from '@/services/cartService';
   import { userService } from '@/services/userService';
+import router from '@/router';
   
   const cartItems = ref([]);
   const loading = ref(true);
@@ -151,8 +152,9 @@
   
   const checkout = async () => {
     try {
-      await userService.makeOrder();
+      const data = await userService.makeOrder();
       cartItems.value = [];
+      router.push({name: "check", params: {id: data.id}})
     } catch (error) {
       console.error('Ошибка оформления заказа:', error);
     }

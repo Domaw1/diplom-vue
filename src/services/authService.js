@@ -17,7 +17,12 @@ export const authService = {
   async register(userData) {
     try {
       const response = await axios.post(`${API_URL}`, userData);
-      return response.data;
+      const responseAuth = await axios.post(`${API_URL}/sign_in`, {
+        email: userData.email,
+        password: userData.password
+      });
+      localStorage.setItem('token', responseAuth.data.token);
+      return responseAuth.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Ошибка регистрации');
     }

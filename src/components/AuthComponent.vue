@@ -5,10 +5,10 @@
         
         <form @submit.prevent="handleSubmit">
           <div class="form-group">
-            <label for="username">Почта</label>
+            <label for="email">Почта</label>
             <input
               type="email"
-              id="username"
+              id="email"
               v-model="form.email"
               required
             >
@@ -25,11 +25,11 @@
           </div>
           
           <div class="form-group" v-if="!isLoginMode">
-            <label for="email">Email</label>
+            <label for="username">Имя</label>
             <input
-              type="email"
-              id="email"
-              v-model="form.email"
+              type="text"
+              id="username"
+              v-model="form.username"
               required
             >
           </div>

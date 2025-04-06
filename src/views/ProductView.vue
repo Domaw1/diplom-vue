@@ -214,10 +214,12 @@ const formattedPrice = computed(() => {
 });
 
 const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const day = date.getDate();
-  const month = date.toLocaleString('ru-RU', { month: 'long' });
-  return `${day} ${month}`;
+  return new Date(dateString).toLocaleDateString('ru-RU', {
+          day: 'numeric',
+          month: 'long',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
 };
 
 const scrollToReviewForm = () => {
