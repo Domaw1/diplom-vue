@@ -57,6 +57,8 @@ const handleFilterChange = async (filters) => {
       filters.subCategory = route.query.subCategory;
     }
     products.value = await fetchFilteredProducts(filters);
+    isProductsExist.value = products.value.value.length === 0;
+
     if(route.query.search)
       applySearch();
   } catch (error) {
