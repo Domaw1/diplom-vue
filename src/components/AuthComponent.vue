@@ -99,7 +99,7 @@ const handleSubmit = async () => {
         password: form.value.password
       });
       toast.success('Успешный вход!\nПеренаправление на главную через 3 секунды...', {
-        timeout: 4000,
+        timeout: 3000,
         position: 'top-center'
       });
 
