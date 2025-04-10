@@ -47,10 +47,6 @@
       <div v-if="successMessage" class="success-message">
         {{ successMessage }}
       </div>
-<!--       
-      <div v-if="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div> -->
     </div>
   </div>
 </template>

@@ -40,6 +40,7 @@ const applySearch = async () => {
   
   if (searchTerm === '') {
     products.value = await LoadProducts();
+    isProductsExist.value = false;
     return;
   }
 

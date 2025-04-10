@@ -19,6 +19,9 @@
         <div class="qr-code" v-if="showQR">
           <img :src="qrCodeUrl" alt="QR код для оплаты">
         </div>
+        <div style="display: flex; justify-content: center; margin-top: 30px;">
+          <h2>Спасибо за покупку!</h2>
+        </div>
       </div>
   
       <div class="actions">
