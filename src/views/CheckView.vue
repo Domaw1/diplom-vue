@@ -40,6 +40,7 @@
   import QRCode from 'qrcode';
   import { useRoute } from 'vue-router';
   import axios from 'axios';
+  import router from '@/router';
   
   export default {
     setup() {
@@ -52,7 +53,7 @@
       const showQR = ref(false);
       const qrCodeUrl = ref('');
       const receiptContent = ref(null);
-  
+
       const loadOrder = async () => {
         try {
           const response = await axios.get(`http://localhost:8080/api/v1/order/user/${route.params.id}`, {
@@ -62,10 +63,14 @@
           });
           order.value = response.data;
         } catch (error) {
-          console.error('Ошибка загрузки заказа:', error);
+          if (error.response && error.response.status === 403) {
+            router.push({name: 'home'});
+          } else {
+            console.error('Ошибка загрузки заказа:', error);
+          }
         }
       };
-  
+
       const formattedDate = computed(() => {
         return new Date(order.value.createdAt).toLocaleDateString('ru-RU', {
           day: 'numeric',

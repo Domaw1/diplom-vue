@@ -43,6 +43,9 @@
       <p class="toggle-mode" @click="toggleMode">
         {{ isLoginMode ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти' }}
       </p>
+      <a href="http://localhost:8080/oauth2/authorization/google" class="google-login-btn">
+        Войти через Google
+      </a>
       
       <div v-if="successMessage" class="success-message">
         {{ successMessage }}

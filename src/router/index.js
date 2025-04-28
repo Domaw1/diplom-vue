@@ -8,6 +8,7 @@ import FavouritesView from '@/views/FavouritesView.vue'
 import ProductCard from '@/components/ProductCard.vue'
 import ProductView from '@/views/ProductView.vue'
 import CheckView from '@/views/CheckView.vue'
+import OAuthSuccesView from '@/views/OAuthSuccesView.vue'
 
 const routes = [
   {
@@ -44,6 +45,11 @@ const routes = [
     path: '/check/:id',
     name: 'check',
     component: CheckView
+  },
+  {
+    path: '/oauth-success',
+    name: 'OauthSuccess',
+    component: OAuthSuccesView
   }
 ]
 
