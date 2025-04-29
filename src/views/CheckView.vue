@@ -123,7 +123,7 @@
           const canvas = await html2canvas(receiptContent.value);
           const receiptImage = canvas.toDataURL('image/png');
           
-          await axios.post('http://localhost:8080/api/v1/email/send-receipt', {
+          await axios.post('http://localhost:8080/api/v1/email/send', {
             orderId: order.value.id,
             receiptImage: receiptImage
           }, {

@@ -86,10 +86,10 @@ const toggleMode = () => {
 };
 
 const handleSubmit = async () => {
-  if (!form.value.email || !form.value.password || (!isLoginMode.value && !form.value.username)) {
-    toast.warning('Пожалуйста, заполните все поля.');
-    return;
-  }
+  // if (!form.value.email || !form.value.password || (!isLoginMode.value && !form.value.username)) {
+  //   toast.warning('Пожалуйста, заполните все поля.');
+  //   return;
+  // }
 
   try {
     if (isLoginMode.value) {
@@ -120,7 +120,7 @@ const handleSubmit = async () => {
   } catch (error) {
     errorMessage.value = error.message || 'Произошла ошибка';
     toast.error(errorMessage.value, {
-      timeout: false,
+      timeout: 2000,
       position: 'top-center'
     });
   }

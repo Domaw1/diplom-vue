@@ -46,5 +46,28 @@ export const userService = {
     } catch (error) {
         throw new Error(error.response?.data?.message || 'Ошибка создания заказа');
     }
-}
+  },
+  async updateUser(userData) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await axios.put(
+          `${API_URL}/user/update`,
+          {
+            username: userData.username,
+            email: userData.email,
+            password: userData.password,
+            currentPassword: userData.currentPassword
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Ошибка обновления профиля');
+    }
+  }
 };
