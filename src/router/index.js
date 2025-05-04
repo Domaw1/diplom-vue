@@ -9,6 +9,7 @@ import ProductCard from '@/components/ProductCard.vue'
 import ProductView from '@/views/ProductView.vue'
 import CheckView from '@/views/CheckView.vue'
 import OAuthSuccesView from '@/views/OAuthSuccesView.vue'
+import AdminView from '@/views/AdminView.vue'
 
 const routes = [
   {
@@ -50,7 +51,12 @@ const routes = [
     path: '/oauth-success',
     name: 'OauthSuccess',
     component: OAuthSuccesView
-  }
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: AdminView
+  },
 ]
 
 const router = createRouter({

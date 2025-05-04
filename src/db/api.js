@@ -52,29 +52,23 @@ export const LoadBrands = async () => {
 }
 
 export const LoadSizes = async () => {
-    let data = ref([]);
-
-    axios.get("http://localhost:8080/api/v1/size").then(response => {
-        data.value = response.data;
-    })
-        .catch(exc => {
-            console.log(exc)
-        });
-
-    return data;
-}
+    try {
+        const response = await axios.get("http://localhost:8080/api/v1/size");
+        return response.data;
+    } catch (exc) {
+        console.log(exc);
+        return [];
+    }
+};
 
 export const LoadColors = async () => {
-    let data = ref([]);
-
-    axios.get("http://localhost:8080/api/v1/color").then(response => {
-        data.value = response.data;
-    })
-        .catch(exc => {
-            console.log(exc)
-        });
-
-    return data;
+    try {
+        const response = await axios.get("http://localhost:8080/api/v1/color");
+        return response.data;
+    } catch (exc) {
+        console.log(exc);
+        return [];
+    }
 }
 
 export const AddReview = async (productId, comment, rating) => {

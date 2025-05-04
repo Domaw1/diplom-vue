@@ -66,6 +66,18 @@
           </svg>
           <span>Корзина</span>
         </button>
+
+        <router-link
+          v-if="isAdmin"
+          to="/admin"
+          class="action-btn"
+        >
+          <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 3h18v18H3V3z" stroke="currentColor" stroke-width="2"/>
+            <path d="M7 7h10v10H7V7z" fill="currentColor"/>
+          </svg>
+          <span>Админ Панель</span>
+        </router-link>
       </div>
     </div>
   </header>
@@ -75,6 +87,25 @@
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { LoadCategories } from "@/db/api";
+import { jwtDecode } from 'jwt-decode';
+
+  const isAdmin = ref(false);
+
+  function checkAdmin() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const payload = jwtDecode(token);
+      isAdmin.value = payload.role === 'ROLE_ADMIN' || payload.roles?.includes('ADMIN') || payload.authorities?.includes('ROLE_ADMIN');
+    } catch (e) {
+      console.error('Ошибка при декодировании токена:', e);
+    }
+  }
+
+  onMounted(() => {
+    checkAdmin();
+  });
 
 const router = useRouter();
 const route = useRoute();
