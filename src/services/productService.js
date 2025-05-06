@@ -29,9 +29,9 @@ export const productService = {
     }
   },
 
-  async updateProduct(productId, productData) {
+  async updateProduct(productData) {
     try {
-      const response = await axios.put(`${API_URL}/products/${productId}`, productData, {
+      const response = await axios.put(`${API_URL}/products/update`, productData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'

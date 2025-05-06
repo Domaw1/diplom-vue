@@ -67,9 +67,9 @@
           <span>Корзина</span>
         </button>
 
-        <router-link
+        <button
           v-if="isAdmin"
-          to="/admin"
+          @click="goToAdmin"
           class="action-btn"
         >
           <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -77,7 +77,7 @@
             <path d="M7 7h10v10H7V7z" fill="currentColor"/>
           </svg>
           <span>Админ Панель</span>
-        </router-link>
+        </button>
       </div>
     </div>
   </header>
@@ -134,6 +134,14 @@ const getCategoryLink = (category) => {
 const goToProfile = () => {
   if (localStorage.getItem('token')) {
     router.push('/profile');
+  } else {
+    router.push('/auth');
+  }
+};
+
+const goToAdmin = () => {
+  if (localStorage.getItem('token')) {
+    router.push('/admin');
   } else {
     router.push('/auth');
   }

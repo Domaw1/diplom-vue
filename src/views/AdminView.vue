@@ -1,180 +1,203 @@
 <template>
 <nav-bar></nav-bar>
-<div class="admin-panel">
-    <h1>Панель администратора</h1>
-    
-    <div class="admin-actions">
-    <button @click="showCreateForm = true" class="btn create-btn">
-        + Добавить товар
-    </button>
-    </div>
-    
-    <div class="products-list">
-    <div v-if="loading" class="loading">Загрузка...</div>
-    
-    <div v-else-if="products.length === 0" class="no-products">
-        Товары не найдены
-    </div>
-    
-    <div v-else class="product-cards">
-        <div v-for="product in products" :key="product.id" class="product-card">
-        <div class="product-images">
-            <img 
-            v-if="product.imageUrls && product.imageUrls.length > 0"
-            :src="product.imageUrls[0]" 
-            :alt="product.name"
-            class="product-image"
-            >
-            <div v-else class="no-image">Нет изображения</div>
-        </div>
+<div class="admin-tabs">
+  <button 
+    @click="activeTab = 'products'" 
+    :class="{ active: activeTab === 'products' }"
+  >
+    Товары
+  </button>
+  <button 
+    @click="activeTab = 'orders'" 
+    :class="{ active: activeTab === 'orders' }"
+  >
+    Заказы
+  </button>
+</div>
+<div v-if="activeTab === 'products'">
+    <div class="admin-panel">
+        <h1>Панель администратора</h1>
         
-        <div class="product-info">
-            <h3>{{ product.name }}</h3>
-            <p class="brand">{{ product.brand }}</p>
-            <p class="price">{{ formatPrice(product.price) }}</p>
-            <p class="description">{{ truncateDescription(product.description) }}</p>
-            
-            <div class="product-variants">
-            <span v-for="variant in product.productVariants" :key="variant.id" class="variant-tag">
-                {{ variant.size }}/{{ variant.color }} ({{ variant.quantity }})
-            </span>
-            </div>
-        </div>
-        
-        <div class="product-actions">
-            <button @click="confirmDelete(product.id)" class="btn delete-btn">
-                Удалить
-            </button>
-        </div>
-        </div>
-    </div>
-    </div>
-    
-    <div v-if="showCreateForm || currentProduct" class="modal-overlay">
-    <div class="modal-content">
-        <h2>{{ currentProduct ? 'Редактирование товара' : 'Создание товара' }}</h2>
-        
-        <form @submit.prevent="submitProductForm" class="product-form">
-        <div class="form-group">
-            <label>Название</label>
-            <input v-model="productForm.name" required>
-        </div>
-        
-        <div class="form-group">
-            <label>Бренд</label>
-            <select v-model="productForm.brand" required>
-                <option disabled value="">Выберите бренд</option>
-                <option v-for="b in brands.value" :key="b.id" :value="b.name">{{ b.name }}</option>
-            </select>
-        </div>
-
-        
-        <div class="form-group">
-            <label>Описание</label>
-            <textarea v-model="productForm.description" rows="3"></textarea>
-        </div>
-        
-        <div class="form-group">
-            <label>Цена</label>
-            <input type="number" v-model="productForm.price" min="0" step="0.01" required>
-        </div>
-        
-        <div class="form-group">
-            <label>Пол</label>
-            <select v-model="productForm.gender">
-                <option value="MALE">Мужской</option>
-                <option value="FEMALE">Женский</option>
-                <option value="UNISEX">Унисекс</option>
-            </select>
-        </div>
-        
-        <div class="form-group">
-            <label>Категория</label>
-            <select v-model="productForm.subCategory" required>
-                <option disabled value="">Выберите категорию</option>
-                <option v-for="cat in categories.value" :key="cat.id" :value="cat.name">{{ cat.name }}</option>
-            </select>
-        </div>
-
-        
-        <div class="form-group">
-            <label>URL изображений (через запятую)</label>
-            <textarea 
-                v-model="productForm.imageUrlsString" 
-                placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
-                rows="2"
-            ></textarea>
-        </div>
-        
-        <h3>Варианты товара</h3>
-        <div v-for="(variant, index) in productForm.variants" :key="index" class="variant-form">
-            <div class="form-group">
-                <label>Размеры</label>
-                <select v-model="variant.size" required>
-                    <option v-for="s in sizes" :key="s.id" :value="s.size">{{ s.size }}</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Цвет</label>
-                <select v-model="variant.color" required>
-                    <option v-for="c in colors" :key="c.id" :value="c.color">{{ c.color }}</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Количество</label>
-                <input type="number" v-model="variant.quantity" min="0" required>
-            </div>
-            
-            <button 
-                type="button" 
-                @click="removeVariant(index)" 
-                class="btn remove-variant-btn"
-            >
-                Удалить вариант
-            </button>
-        </div>
-        
-        <button 
-            type="button" 
-            @click="addVariant" 
-            class="btn add-variant-btn"
-        >
-            + Добавить вариант
+        <div class="admin-actions">
+        <button @click="showCreateForm = true" class="btn create-btn">
+            + Добавить товар
         </button>
+        </div>
         
-        <div class="form-actions">
+        <div class="products-list">
+        <div v-if="loading" class="loading">Загрузка...</div>
+        
+        <div v-else-if="products.length === 0" class="no-products">
+            Товары не найдены
+        </div>
+        
+        <div v-else class="product-cards">
+            <div v-for="product in products" :key="product.id" class="product-card">
+            <div class="product-images">
+                <img 
+                v-if="product.imageUrls && product.imageUrls.length > 0"
+                :src="product.imageUrls[0]" 
+                :alt="product.name"
+                class="product-image"
+                >
+                <div v-else class="no-image">Нет изображения</div>
+            </div>
+            
+            <div class="product-info">
+                <h3>{{ product.name }}</h3>
+                <p class="brand">{{ product.brand }}</p>
+                <p class="price">{{ formatPrice(product.price) }}</p>
+                <p class="description">{{ truncateDescription(product.description) }}</p>
+                
+                <div class="product-variants">
+                <span v-for="variant in product.productVariants" :key="variant.id" class="variant-tag">
+                    {{ variant.size }}/{{ variant.color }} ({{ variant.quantity }})
+                </span>
+                </div>
+            </div>
+            
+            <div class="product-actions">
+                <button @click="openVariantsEditor(product)" class="btn edit-btn">
+                    Редактировать
+                </button>
+                <button @click="confirmDelete(product.id)" class="btn delete-btn">
+                    Удалить
+                </button>
+            </div>
+            </div>
+        </div>
+        </div>
+        
+        <div v-if="showCreateForm || currentProduct" class="modal-overlay">
+        <div class="modal-content">
+            <h2>{{ currentProduct ? 'Редактирование товара' : 'Создание товара' }}</h2>
+            
+            <form @submit.prevent="submitProductForm" class="product-form">
+            <div class="form-group">
+                <label>Название</label>
+                <input v-model="productForm.name" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Бренд</label>
+                <select v-model="productForm.brand" required>
+                    <option disabled value="">Выберите бренд</option>
+                    <option v-for="b in brands.value" :key="b.id" :value="b.name">{{ b.name }}</option>
+                </select>
+            </div>
+
+            
+            <div class="form-group">
+                <label>Описание</label>
+                <textarea v-model="productForm.description" rows="3"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Цена</label>
+                <input type="number" v-model="productForm.price" min="0" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Пол</label>
+                <select v-model="productForm.gender">
+                    <option value="MALE">Мужской</option>
+                    <option value="FEMALE">Женский</option>
+                    <option value="UNISEX">Унисекс</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Категория</label>
+                <select v-model="productForm.subCategory" required>
+                    <option disabled value="">Выберите категорию</option>
+                    <option v-for="cat in categories.value" :key="cat.id" :value="cat.name">{{ cat.name }}</option>
+                </select>
+            </div>
+
+            
+            <div class="form-group">
+                <label>URL изображений (через запятую)</label>
+                <textarea 
+                    v-model="productForm.imageUrlsString" 
+                    placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
+                    rows="2"
+                ></textarea>
+            </div>
+            
+            <h3>Варианты товара</h3>
+            <div v-for="(variant, index) in productForm.variants" :key="index" class="variant-form">
+                <div class="form-group">
+                    <label>Размеры</label>
+                    <select v-model="variant.size" required>
+                        <option v-for="s in sizes" :key="s.id" :value="s.size">{{ s.size }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Цвет</label>
+                    <select v-model="variant.color" required>
+                        <option v-for="c in colors" :key="c.id" :value="c.color">{{ c.color }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Количество</label>
+                    <input type="number" v-model="variant.quantity" min="0" required>
+                </div>
+                
+                <button 
+                    type="button" 
+                    @click="removeVariant(index)" 
+                    class="btn remove-variant-btn"
+                >
+                    Удалить вариант
+                </button>
+            </div>
+            
             <button 
                 type="button" 
-                @click="closeModal" 
-                class="btn cancel-btn"
+                @click="addVariant" 
+                class="btn add-variant-btn"
             >
-                Отмена
+                + Добавить вариант
             </button>
-            <button type="submit" class="btn submit-btn">
-                {{ currentProduct ? 'Сохранить' : 'Создать' }}
-            </button>
+            
+            <div class="form-actions">
+                <button 
+                    type="button" 
+                    @click="closeModal" 
+                    class="btn cancel-btn"
+                >
+                    Отмена
+                </button>
+                <button type="submit" class="btn submit-btn">
+                    {{ currentProduct ? 'Сохранить' : 'Создать' }}
+                </button>
+            </div>
+            </form>
         </div>
-        </form>
-    </div>
-    </div>
-    
-    <div v-if="showDeleteConfirm" class="modal-overlay">
-    <div class="confirm-modal">
-        <h3>Подтвердите удаление</h3>
-            <p>Вы уверены, что хотите удалить этот товар?</p>
-        <div class="confirm-actions">
-            <button @click="showDeleteConfirm = false" class="btn cancel-btn">
-                Отмена
-            </button>
-            <button @click="deleteProduct" class="btn delete-btn">
-                Удалить
-            </button>
         </div>
-    </div>
+        <div v-if="showDeleteConfirm" class="modal-overlay">
+        <div class="confirm-modal">
+            <h3>Подтвердите удаление</h3>
+                <p>Вы уверены, что хотите удалить этот товар?</p>
+            <div class="confirm-actions">
+                <button @click="showDeleteConfirm = false" class="btn cancel-btn">
+                    Отмена
+                </button>
+                <button @click="deleteProduct" class="btn delete-btn">
+                    Удалить
+                </button>
+            </div>
+        </div>
+        </div>
     </div>
 </div>
+
+<div v-if="activeTab === 'orders'">
+  <admin-orders></admin-orders>
+</div>
+
 </template>
 
 <script setup>
@@ -183,6 +206,8 @@ import NavBar from '@/components/NavBar.vue';
 import { productService } from '@/services/productService';
 import { useToast } from 'vue-toastification';
 import { LoadCategories, LoadBrands, LoadColors, LoadSizes } from '@/db/api';
+import { orderService } from '@/services/orderService';
+import AdminOrders from '@/components/AdminOrders.vue';
 
 const categories = ref([]);
 const brands = ref([]);
@@ -197,6 +222,8 @@ const showCreateForm = ref(false);
 const currentProduct = ref(null);
 const productToDelete = ref(null);
 const showDeleteConfirm = ref(false);
+
+const activeTab = ref('products');
 
 const productForm = ref({
     name: '',
@@ -215,8 +242,8 @@ const productForm = ref({
 
 onMounted(async () => {
     loadProducts();
-    categories.value = (await LoadCategories());
-    brands.value = (await LoadBrands());
+    categories.value = await LoadCategories();
+    brands.value = await LoadBrands();
     sizes.value = await LoadSizes();
     colors.value = await LoadColors();
 });
@@ -255,6 +282,26 @@ try {
 }
 };
 
+const openVariantsEditor = (product) => {
+    currentProduct.value = product;
+    showCreateForm.value = true;
+
+    productForm.value = {
+            name: product.name,
+            brand: product.brand,
+            description: product.description,
+            price: product.price,
+            gender: product.gender,
+            subCategory: product.subCategory,
+            imageUrlsString: product.imageUrls ? product.imageUrls.join(', ') : '',
+            variants: product.productVariants.map(variant => ({
+            size: variant.size,
+            color: variant.color,
+            quantity: variant.quantity
+        }))
+    };
+}
+
 const submitProductForm = async () => {
   try {
     const productData = {
@@ -272,15 +319,16 @@ const submitProductForm = async () => {
     };
 
     if (currentProduct.value) {
-      await productService.updateProduct(currentProduct.value.id, productData);
-      toast.success('Товар успешно обновлен', {
-        timeout: 3000
-      });
+        productData.id = currentProduct.value.id
+        await productService.updateProduct(productData);
+        toast.success('Товар успешно обновлен', {
+            timeout: 3000
+        });
     } else {
-      await productService.createProduct(productData);
-      toast.success('Товар успешно создан', {
-        timeout: 3000
-      });
+        await productService.createProduct(productData);
+        toast.success('Товар успешно создан', {
+            timeout: 3000
+        });
     }
 
     closeModal();
@@ -583,4 +631,27 @@ justify-content: center;
 gap: 1rem;
 margin-top: 1.5rem;
 }
+
+.admin-tabs {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.admin-tabs button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #f0f0f0;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.admin-tabs button.active {
+  background: #2196f3;
+  color: white;
+}
+
 </style>

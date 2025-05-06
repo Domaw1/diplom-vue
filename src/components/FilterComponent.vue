@@ -69,12 +69,11 @@
       </div>
     </div>
 
-    <!-- Фильтр по цветам -->
     <div class="filter-section">
       <h3 class="filter-title">Цвет</h3>
       <div class="color-filters">
         <div 
-          v-for="color in availableColors.value"
+          v-for="color in availableColors"
           :key="color.color"
           class="color-option"
           :class="{ active: selectedColors.includes(color.color) }"
@@ -85,17 +84,16 @@
       </div>
     </div>
 
-    <!-- Фильтр по размерам -->
     <div class="filter-section">
       <h3 class="filter-title">Размер</h3>
       <div class="size-filters">
         <button
-          v-for="size in sizes.value"
-          :key="size.id"
-          :class="{ active: selectedSizes.includes(size.size) }"
-          @click="toggleSize(size.size)"
+          v-for="s in sizes"
+          :key="s.size"
+          :class="{ active: selectedSizes.includes(s.size) }"
+          @click="toggleSize(s.size)"
         >
-          {{ size.size }}
+          {{ s.size }}
         </button>
       </div>
     </div>
