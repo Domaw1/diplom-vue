@@ -1,18 +1,24 @@
 <template>
 <nav-bar></nav-bar>
 <div class="admin-tabs">
-  <button 
-    @click="activeTab = 'products'" 
-    :class="{ active: activeTab === 'products' }"
-  >
-    Товары
-  </button>
-  <button 
-    @click="activeTab = 'orders'" 
-    :class="{ active: activeTab === 'orders' }"
-  >
-    Заказы
-  </button>
+    <button 
+        @click="activeTab = 'products'" 
+        :class="{ active: activeTab === 'products' }"
+    >
+        Товары
+    </button>
+    <button 
+        @click="activeTab = 'orders'" 
+        :class="{ active: activeTab === 'orders' }"
+    >
+        Заказы
+    </button>
+    <button 
+    @click="activeTab = 'dictionaries'" 
+    :class="{ active: activeTab === 'dictionaries' }"
+    >
+        Справочники
+    </button>
 </div>
 <div v-if="activeTab === 'products'">
     <div class="admin-panel">
@@ -198,15 +204,59 @@
   <admin-orders></admin-orders>
 </div>
 
+<div v-if="activeTab === 'dictionaries'" class="admin-panel">
+  <h1>Справочники</h1>
+
+  <div class="dictionary-section">
+    <h2>Категории</h2>
+    <div v-for="cat in categories.value" :key="cat.id" class="dictionary-item">
+      <input v-model="cat.name" />
+      <button @click="updateCategory(cat)">Сохранить</button>
+      <button @click="deleteCategory(cat.id)">Удалить</button>
+    </div>
+    <div class="add-form">
+      <input v-model="newCategory" placeholder="Новая категория" />
+      <button @click="addCategory">Добавить</button>
+    </div>
+  </div>
+
+  <div class="dictionary-section">
+    <h2>Бренды</h2>
+    <div v-for="b in brands.value" :key="b.id" class="dictionary-item">
+      <input v-model="b.name" />
+      <textarea v-model="b.logoUrl" placeholder="Логотип URL" style="height: 50px; width: 300px;"></textarea>
+      <button @click="updateBrand(b)">Сохранить</button>
+      <button @click="deleteBrand(b.id)">Удалить</button>
+    </div>
+    <div class="add-form">
+      <input v-model="newBrand" placeholder="Новый бренд" />
+      <textarea v-model="newBrandLogo" placeholder="Логотип URL" style="height: 50px; width: 300px;"></textarea>
+      <button @click="addBrand">Добавить</button>
+    </div>
+  </div>
+
+  <div class="dictionary-section">
+    <h2>Цвета</h2>
+    <div v-for="c in colors" :key="c.color" class="dictionary-item">
+      <input v-model="c.color" />
+      <button @click="updateColor(c)">Сохранить</button>
+      <button @click="deleteColor(c.color)">Удалить</button>
+    </div>
+    <div class="add-form">
+      <input v-model="newColor" placeholder="Новый цвет" />
+      <button @click="addColor">Добавить</button>
+    </div>
+  </div>
+</div>
+
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import NavBar from '@/components/NavBar.vue';
 import { productService } from '@/services/productService';
 import { useToast } from 'vue-toastification';
 import { LoadCategories, LoadBrands, LoadColors, LoadSizes } from '@/db/api';
-import { orderService } from '@/services/orderService';
 import AdminOrders from '@/components/AdminOrders.vue';
 
 const categories = ref([]);
@@ -224,6 +274,11 @@ const productToDelete = ref(null);
 const showDeleteConfirm = ref(false);
 
 const activeTab = ref('products');
+
+const newCategory = ref('');
+const newBrand = ref('');
+const newBrandLogo = ref('');
+const newColor = ref('');
 
 const productForm = ref({
     name: '',
@@ -381,277 +436,296 @@ return text.length > 100 ? text.substring(0, 100) + '...' : text;
 
 <style scoped>
 .admin-panel {
-max-width: 1200px;
-margin: 0 auto;
-padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #fafafa;
 }
 
-h1 {
-text-align: center;
-margin-bottom: 2rem;
+h1, h2, h3 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 1rem;
 }
 
 .admin-actions {
-margin-bottom: 2rem;
-display: flex;
-justify-content: flex-end;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
 }
 
 .products-list {
-margin-top: 2rem;
+  margin-top: 2rem;
 }
 
 .loading, .no-products {
-text-align: center;
-padding: 2rem;
-color: #666;
+  text-align: center;
+  padding: 2rem;
+  color: #777;
 }
 
 .product-cards {
-display: grid;
-grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
 }
 
 .product-card {
-border: 1px solid #ddd;
-border-radius: 8px;
-overflow: hidden;
-display: flex;
-flex-direction: column;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-images {
-height: 200px;
-background: #f5f5f5;
-display: flex;
-align-items: center;
-justify-content: center;
+  height: 200px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .product-image {
-max-width: 100%;
-max-height: 100%;
-object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .no-image {
-color: #999;
+  color: #aaa;
+  font-size: 14px;
 }
 
 .product-info {
-padding: 1rem;
-flex-grow: 1;
+  padding: 1rem;
+  flex-grow: 1;
 }
 
 .product-info h3 {
-margin: 0 0 0.5rem;
-font-size: 1.2rem;
+  margin: 0 0 0.25rem;
+  font-size: 1.1rem;
 }
 
 .brand {
-color: #666;
-margin: 0 0 0.5rem;
+  color: #666;
+  font-size: 0.9rem;
 }
 
 .price {
-font-weight: bold;
-font-size: 1.2rem;
-margin: 0 0 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+  color: #1a73e8;
 }
 
 .description {
-color: #444;
-margin: 0 0 1rem;
-font-size: 0.9rem;
+  font-size: 0.85rem;
+  color: #444;
+  margin-bottom: 1rem;
 }
 
 .product-variants {
-display: flex;
-flex-wrap: wrap;
-gap: 0.5rem;
-margin: 0.5rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
 }
 
 .variant-tag {
-background: #f0f0f0;
-padding: 0.25rem 0.5rem;
-border-radius: 4px;
-font-size: 0.8rem;
+  background: #e8f0fe;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #1a73e8;
 }
 
 .product-actions {
-display: flex;
-border-top: 1px solid #eee;
-padding: 1rem;
-gap: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid #eee;
 }
 
 .btn {
-padding: 0.5rem 1rem;
-border: none;
-border-radius: 4px;
-cursor: pointer;
-font-size: 0.9rem;
-transition: all 0.2s;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
 .create-btn {
-background: #4caf50;
-color: white;
+  background-color: #43a047;
+  color: white;
 }
 
 .create-btn:hover {
-background: #3d8b40;
+  background-color: #388e3c;
 }
 
 .edit-btn {
-background: #2196f3;
-color: white;
-flex-grow: 1;
+  background-color: #1e88e5;
+  color: white;
 }
 
 .edit-btn:hover {
-background: #0b7dda;
+  background-color: #1565c0;
 }
 
 .delete-btn {
-background: #f44336;
-color: white;
-flex-grow: 1;
+  background-color: #e53935;
+  color: white;
 }
 
 .delete-btn:hover {
-background: #d32f2f;
+  background-color: #c62828;
+}
+
+.cancel-btn {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.cancel-btn:hover {
+  background-color: #bdbdbd;
+}
+
+.submit-btn {
+  background-color: #1e88e5;
+  color: white;
+}
+
+.submit-btn:hover {
+  background-color: #1565c0;
 }
 
 .modal-overlay {
-position: fixed;
-top: 0;
-left: 0;
-right: 0;
-bottom: 0;
-background: rgba(0, 0, 0, 0.5);
-display: flex;
-align-items: center;
-justify-content: center;
-z-index: 1000;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
 }
 
 .modal-content {
-background: white;
-padding: 2rem;
-border-radius: 8px;
-max-width: 800px;
-width: 90%;
-max-height: 90vh;
-overflow-y: auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  max-width: 800px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .product-form {
-display: grid;
-gap: 1rem;
+  display: grid;
+  gap: 1rem;
 }
 
 .form-group {
-display: grid;
-gap: 0.5rem;
-}
-
-.form-group label {
-font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
-padding: 0.75rem;
-border: 1px solid #ddd;
-border-radius: 4px;
-font-size: 1rem;
-width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
 }
 
 .variant-form {
-border: 1px solid #eee;
-padding: 1rem;
-border-radius: 4px;
-margin-bottom: 1rem;
-}
-
-.remove-variant-btn {
-background: #f44336;
-color: white;
-margin-top: 0.5rem;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
 }
 
 .add-variant-btn {
-background: #4caf50;
-color: white;
-margin-bottom: 1rem;
-}
-
-.form-actions {
-display: flex;
-justify-content: flex-end;
-gap: 0.5rem;
-margin-top: 1rem;
-}
-
-.cancel-btn {
-background: #f5f5f5;
-color: #333;
-}
-
-.cancel-btn:hover {
-background: #e0e0e0;
-}
-
-.submit-btn {
-background: #2196f3;
-color: white;
-}
-
-.submit-btn:hover {
-background: #0b7dda;
-}
-
-.confirm-modal {
-background: white;
-padding: 2rem;
-border-radius: 8px;
-max-width: 500px;
-width: 90%;
-text-align: center;
-}
-
-.confirm-actions {
-display: flex;
-justify-content: center;
-gap: 1rem;
-margin-top: 1.5rem;
-}
-
-.admin-tabs {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 40px;
-}
-
-.admin-tabs button {
-  padding: 0.5rem 1rem;
-  border: none;
-  background: #f0f0f0;
-  cursor: pointer;
-  border-radius: 4px;
-  font-weight: bold;
-  transition: 0.2s;
-}
-
-.admin-tabs button.active {
-  background: #2196f3;
+  background: #43a047;
   color: white;
 }
 
+.remove-variant-btn {
+  background: #ef5350;
+  color: white;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.confirm-modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Admin tabs */
+.admin-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.admin-tabs button {
+  padding: 0.6rem 1.2rem;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: 0.2s ease;
+  cursor: pointer;
+}
+
+.admin-tabs button.active {
+  background: #1e88e5;
+  color: white;
+}
+
+/* Dictionary section */
+.dictionary-section {
+  margin-bottom: 2rem;
+}
+
+.dictionary-item,
+.add-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dictionary-item input,
+.add-form input,
+.dictionary-item textarea,
+.add-form textarea {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  flex: 1;
+  min-width: 200px;
+}
 </style>
