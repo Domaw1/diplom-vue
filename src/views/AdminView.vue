@@ -91,7 +91,6 @@
                     <option v-for="b in brands.value" :key="b.id" :value="b.name">{{ b.name }}</option>
                 </select>
             </div>
-
             
             <div class="form-group">
                 <label>Описание</label>
@@ -212,11 +211,11 @@
     <div v-for="cat in categories.value" :key="cat.id" class="dictionary-item">
       <input v-model="cat.name" />
       <button @click="updateCategory(cat)">Сохранить</button>
-      <button @click="deleteCategory(cat.id)">Удалить</button>
+      <button @click="deleteCategory(cat)">Удалить</button>
     </div>
     <div class="add-form">
       <input v-model="newCategory" placeholder="Новая категория" />
-      <button @click="addCategory">Добавить</button>
+      <button @click="addCategory()">Добавить</button>
     </div>
   </div>
 
@@ -226,25 +225,12 @@
       <input v-model="b.name" />
       <textarea v-model="b.logoUrl" placeholder="Логотип URL" style="height: 50px; width: 300px;"></textarea>
       <button @click="updateBrand(b)">Сохранить</button>
-      <button @click="deleteBrand(b.id)">Удалить</button>
+      <button @click="deleteBrand(b)">Удалить</button>
     </div>
     <div class="add-form">
       <input v-model="newBrand" placeholder="Новый бренд" />
       <textarea v-model="newBrandLogo" placeholder="Логотип URL" style="height: 50px; width: 300px;"></textarea>
       <button @click="addBrand">Добавить</button>
-    </div>
-  </div>
-
-  <div class="dictionary-section">
-    <h2>Цвета</h2>
-    <div v-for="c in colors" :key="c.color" class="dictionary-item">
-      <input v-model="c.color" />
-      <button @click="updateColor(c)">Сохранить</button>
-      <button @click="deleteColor(c.color)">Удалить</button>
-    </div>
-    <div class="add-form">
-      <input v-model="newColor" placeholder="Новый цвет" />
-      <button @click="addColor">Добавить</button>
     </div>
   </div>
 </div>
@@ -258,6 +244,8 @@ import { productService } from '@/services/productService';
 import { useToast } from 'vue-toastification';
 import { LoadCategories, LoadBrands, LoadColors, LoadSizes } from '@/db/api';
 import AdminOrders from '@/components/AdminOrders.vue';
+import { brandService } from '@/services/brandService';
+import { categoryService } from '@/services/categoryService';
 
 const categories = ref([]);
 const brands = ref([]);
@@ -320,6 +308,105 @@ const confirmDelete = (productId) => {
     productToDelete.value = productId;
     showDeleteConfirm.value = true;
 };
+
+const addBrand = async () => {
+  if (!newBrand.value.trim()) {
+    toast.warning('Введите название бренда');
+    return;
+  }
+
+  try {
+    const response = await brandService.addBrand(newBrand.value, newBrandLogo.value);
+    newBrand.value = '';
+    newBrandLogo.value = '';
+    toast.success('Бренд добавлен', {
+      timeout: 3000
+    });
+    brands.value = await LoadBrands();
+  } catch (error) {
+    toast.error('Ошибка при добавлении бренда', {
+      timeout: 3000
+    });
+    console.error(error);
+  }
+};
+
+const deleteBrand = async (brand) => {
+  try {
+    await brandService.deleteBrand(brand.name, brand.logoUrl);
+    toast.success('Бренд удалён', {
+      timeout: 3000
+    });
+    brands.value = await LoadBrands();
+  } catch (error) {
+    toast.error('Ошибка при удалении бренда', {
+      timeout: 3000
+    });
+    console.error(error);
+  }
+};
+
+const updateBrand = async (brand) => {
+  try {
+    console.log(brand.id);
+    
+    await brandService.updateBrand(brand.id, brand.name, brand.logoUrl);
+    toast.success('Бренд обновлён', {
+      timeout: 3000
+    });
+  } catch (error) {
+    toast.error('Ошибка при обновлении бренда', {
+      timeout: 3000
+    });
+    console.error(error);
+  }
+};
+
+const addCategory = async () => {
+  try {
+    await categoryService.add(newCategory.value);
+    toast.success('Подкатегория добавлена', {
+      timeout: 3000
+    });
+    categories.value = await LoadCategories();
+    newCategory.value = '';
+  } catch (err) {
+    toast.error('Ошибка при добавлении подкатегории', {
+      timeout: 3000
+    });
+    console.log(err);
+    
+  }
+};
+
+const updateCategory = async (sub) => {
+  try {
+    await categoryService.update(sub.id, sub.name, {
+      timeout: 3000
+    });
+    toast.success('Подкатегория обновлена');
+  } catch (err) {
+    toast.error('Ошибка при обновлении подкатегории', {
+      timeout: 3000
+    });
+  }
+};
+
+const deleteCategory = async (sub) => {
+  try {
+    await categoryService.delete(sub.id);
+    toast.success('Подкатегория удалена', {
+      timeout: 3000
+    });
+    categories.value = await LoadCategories();
+  } catch (err) {
+    toast.error('Ошибка при удалении подкатегории', {
+      timeout: 3000
+    });
+  }
+};
+
+
 
 const deleteProduct = async () => {
 try {
@@ -682,7 +769,6 @@ h1, h2, h3 {
   margin-top: 1.5rem;
 }
 
-/* Admin tabs */
 .admin-tabs {
   display: flex;
   justify-content: center;
