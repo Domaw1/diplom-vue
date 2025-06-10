@@ -18,6 +18,11 @@
 
       <h3 class="product-name">{{ product.name }}</h3>
 
+      <div class="product-variants">
+        <span v-for="variant in product.productVariants" :key="variant.id" class="variant-tag">
+            {{ variant.size }}/Кол-во: {{ variant.quantity }}
+        </span>
+      </div>
       <div class="rating-section">
         <span class="rating">⭐ {{ product.rating !== 0 ? product.rating : "Нет оценок" }}</span>
         <span v-if="product.reviews?.length" class="reviews-count">► {{ product.reviews.length }} Отзыва</span>
@@ -66,6 +71,20 @@ const formattedPrice = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.product-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.variant-tag {
+  background: #e8f0fe;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #1a73e8;
 }
 
 .product-image img {

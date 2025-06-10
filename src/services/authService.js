@@ -10,7 +10,7 @@ export const authService = {
       localStorage.setItem('token', response.data.token);
       const decoded = jwtDecode(response.data.token);
       console.log(decoded);
-      
+
       if (decoded.role === 'ROLE_ADMIN') {
         console.log('Вы вошли как администратор');
       }
@@ -40,5 +40,26 @@ export const authService = {
 
   getToken() {
     return localStorage.getItem('token');
+  },
+
+  async resetPassword(email) {
+    try {
+      const response = await axios.post(`${API_URL}/reset-password-request`, { email });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Не удалось отправить письмо для сброса');
+    }
+  },
+
+  async confirmResetPassword(token, newPassword) {
+    try {
+      const response = await axios.post(`${API_URL}/reset-password`, {
+        token,
+        newPassword
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Ошибка при установке нового пароля');
+    }
   }
 };

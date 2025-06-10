@@ -2,18 +2,18 @@
   <nav-bar></nav-bar>
   <div class="product-detail">
       <button class="back-btn" @click="router.back()">← Назад</button>
-
       <div class="detail-container">
           <div class="images-section">
-              <img
-              v-for="(img, index) in product.imageUrls"
-              :key="index"
-              :src="img"
-              class="product-image"
-              :alt="product.name"
-              />
+            <Carousel v-bind="carouselConfig">
+              <Slide v-for="(img, index) in product.imageUrls" :key="index">
+                <img :src="img" :alt="product.name" class="product-image" />
+              </Slide>
+              <template #addons>
+                <Navigation />
+                <Pagination />
+              </template>
+            </Carousel>
           </div>
-
           <div class="info-section">
               <h1>{{ product.name }}</h1>
               <div class="brand-rating">
@@ -118,6 +118,8 @@ import { cartService } from '@/services/cartService';
 import { favoritesService } from '@/services/favoriteService';
 import NavBar from '@/components/NavBar.vue';
 import router from '@/router';
+import { Carousel, Slide, Navigation, Pagination } from 'vue3-carousel';
+import 'vue3-carousel/dist/carousel.css'
 
 const route = useRoute();
 const id = route.params.id;
@@ -130,6 +132,29 @@ const cartItems = ref([]);
 const newReviewRating = ref("");
 const newReviewText = ref("");
 const reviewForm = ref(null);
+const currentSlide = ref(0)
+
+const slideTo = (nextSlide) => (currentSlide.value = nextSlide)
+
+const carouselConfig = {
+  // itemsToShow: 2,
+  // gap: 5,
+  // wrapAround: true,
+  // mouseDrag: true,
+  // autoplay:false,
+  // pauseAutoplayOnHover: true
+  itemsToShow: 1,
+  wrapAround: true,
+  touchDrag: false,
+  gap: 10,
+}
+
+const thumbnailsConfig = {
+  itemsToShow: 2,
+  wrapAround: true,
+  touchDrag: false,
+  gap: 10,
+}
 
 const loadData = async () => {
   try {

@@ -24,10 +24,18 @@
         <div v-for="order in sortedOrders" :key="order.id" class="order-card">
           <p><strong>ID заказа:</strong> {{ order.id }}</p>
           <p><strong>Пользователь:</strong> {{ order.user }}</p>
+          <p><strong>Дата заказа:</strong> {{ formatDate(order.createdAt) }}</p>
+
+          <p><strong>Содержимое заказа:</strong></p>
+          <ul class="order-items-list">
+            <li v-for="(item, index) in order.orderItems" :key="index">
+              {{ item.name }} — {{ item.quantity }} шт. × {{ formatPrice(item.productVariant.product.price) }}
+            </li>
+          </ul>
           <p><strong>Статус:</strong> 
             <select v-model="order.orderStatus" @change="updateStatus(order)">
               <option value="NEW">Новый</option>
-              <option value="DELIVERED">Доставлен</option>
+              <option value="DELIVERED">Получен</option>
               <option value="CANCELED">Отменен</option>
             </select>
           </p>
@@ -47,15 +55,25 @@ const loading = ref(true);
 const toast = useToast();
 
 const sortBy = ref('id');
+
 const sortDirection = ref('asc');
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('ru-RU', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date);
+};
 
 const sortedOrders = computed(() => {
-return [...orders.value].sort((a, b) => {
-const aValue = a[sortBy.value];
-const bValue = b[sortBy.value];
-
-if (typeof aValue === 'number' && typeof bValue === 'number') {
-return sortDirection.value === 'asc' ? aValue - bValue : bValue - aValue;
+  return [...orders.value].sort((a, b) => {
+  const aValue = a[sortBy.value];
+  const bValue = b[sortBy.value];
+  if (typeof aValue === 'number' && typeof bValue === 'number') {
+  return sortDirection.value === 'asc' ? aValue - bValue : bValue - aValue;
 }
 
 return sortDirection.value === 'asc'
@@ -119,6 +137,13 @@ return new Intl.NumberFormat('ru-RU', {
   margin-bottom: 2rem;
   font-size: 2rem;
   font-weight: 600;
+}
+
+.order-items-list {
+  margin: 0.5rem 0 1rem;
+  padding-left: 1.2rem;
+  list-style-type: disc;
+  color: #555;
 }
 
 .order-card {

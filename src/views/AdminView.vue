@@ -56,9 +56,9 @@
                 <p class="description">{{ truncateDescription(product.description) }}</p>
                 
                 <div class="product-variants">
-                <span v-for="variant in product.productVariants" :key="variant.id" class="variant-tag">
-                    {{ variant.size }}/{{ variant.color }} ({{ variant.quantity }})
-                </span>
+                  <span v-for="variant in product.productVariants" :key="variant.id" class="variant-tag">
+                      {{ variant.size }}/{{ variant.color }} ({{ variant.quantity }})
+                  </span>
                 </div>
             </div>
             

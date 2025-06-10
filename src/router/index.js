@@ -10,6 +10,7 @@ import ProductView from '@/views/ProductView.vue'
 import CheckView from '@/views/CheckView.vue'
 import OAuthSuccesView from '@/views/OAuthSuccesView.vue'
 import AdminView from '@/views/AdminView.vue'
+import ResetPasswordView from '@/views/ResetPasswordView.vue'
 
 const routes = [
   {
@@ -57,6 +58,11 @@ const routes = [
     name: 'admin',
     component: AdminView
   },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPasswordView
+  }
 ]
 
 const router = createRouter({

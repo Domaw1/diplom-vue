@@ -1,58 +1,63 @@
 <template>
   <div class="auth-container">
     <div class="auth-form">
-      <h2>{{ isLoginMode ? 'Вход' : 'Регистрация' }}</h2>
-      
-      <form @submit.prevent="handleSubmit">
+      <h2>
+        {{ isResetMode ? 'Восстановление пароля' : (isLoginMode ? 'Вход' : 'Регистрация') }}
+      </h2>
+
+      <form v-if="!isResetMode" @submit.prevent="handleSubmit">
         <div class="form-group">
           <label for="email">Почта</label>
-          <input
-            type="email"
-            id="email"
-            v-model="form.email"
-          >
+          <input type="email" id="email" v-model="form.email">
           <span class="error-text" v-if="errors.email">{{ errors.email }}</span>
         </div>
-        
+
         <div class="form-group">
           <label for="password">Пароль</label>
-          <input
-            type="password"
-            id="password"
-            v-model="form.password"
-          >
+          <input type="password" id="password" v-model="form.password" minlength="4">
           <span class="error-text" v-if="errors.password">{{ errors.password }}</span>
         </div>
-        
+
         <div class="form-group" v-if="!isLoginMode">
           <label for="username">Имя</label>
-          <input
-            type="text"
-            id="username"
-            v-model="form.username"
-          >
+          <input type="text" id="username" v-model="form.username">
           <span class="error-text" v-if="errors.username">{{ errors.username }}</span>
         </div>
-        
+
         <button type="submit" class="submit-btn" :disabled="isSubmitting">
           <span v-if="isSubmitting">Обработка...</span>
           <span v-else>{{ isLoginMode ? 'Войти' : 'Зарегистрироваться' }}</span>
         </button>
+
+        <p v-if="isLoginMode" class="forgot-password" @click="isResetMode = true">
+          Забыли пароль?
+        </p>
+
+        <p class="toggle-mode" @click="toggleMode">
+          {{ isLoginMode ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти' }}
+        </p>
       </form>
-      
-      <p class="toggle-mode" @click="toggleMode">
-        {{ isLoginMode ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти' }}
-      </p>
-      <a href="http://localhost:8080/oauth2/authorization/google" class="google-login-btn">
-        Войти через Google
-      </a>
-      
+
+      <form v-else @submit.prevent="handleReset">
+        <div class="form-group">
+          <label for="reset-email">Почта</label>
+          <input type="email" id="reset-email" v-model="form.email">
+          <span class="error-text" v-if="errors.email">{{ errors.email }}</span>
+        </div>
+        <button type="submit" class="submit-btn" :disabled="isSubmitting">
+          <span v-if="isSubmitting">Отправка...</span>
+          <span v-else>Отправить письмо</span>
+        </button>
+        <p class="toggle-mode" @click="isResetMode = false">Назад</p>
+      </form>
+
       <div v-if="successMessage" class="success-message">
         {{ successMessage }}
       </div>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref } from 'vue';
@@ -80,10 +85,40 @@ const form = ref({
   email: ''
 });
 
+const isResetMode = ref(false);
+
 const toggleMode = () => {
   isLoginMode.value = !isLoginMode.value;
+  isResetMode.value = false;
   errorMessage.value = '';
+  successMessage.value = '';
 };
+
+const handleReset = async () => {
+  if (!form.value.email) {
+    toast.warning('Введите почту');
+    return;
+  }
+
+  isSubmitting.value = true;
+  try {
+    await authService.resetPassword(form.value.email);
+    toast.success('Письмо для сброса пароля отправлено', {
+      timeout: 3000,
+      position: 'top-center'
+    });
+    isResetMode.value = false;
+    form.value.email = '';
+  } catch (error) {
+    toast.error('Ошибка: ' + (error.message || 'не удалось отправить письмо'), {
+      timeout: 3000,
+      position: 'top-center'
+    });
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
 
 const handleSubmit = async () => {
   if (!form.value.email || !form.value.password || (!isLoginMode.value && !form.value.username)) {
@@ -134,6 +169,15 @@ const handleSubmit = async () => {
   align-items: center;
   min-height: 100vh;
   background-color: #f5f5f5;
+}
+
+.forgot-password {
+  text-align: center;
+  margin-top: 0.75rem;
+  color: #005BFF;
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: underline;
 }
 
 .auth-form {
