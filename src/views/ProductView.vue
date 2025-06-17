@@ -1,125 +1,149 @@
 <template>
   <nav-bar></nav-bar>
   <div class="product-detail">
-      <button class="back-btn" @click="router.back()">← Назад</button>
-      <div class="detail-container">
-          <div class="images-section">
-            <Carousel v-bind="carouselConfig">
-              <Slide v-for="(img, index) in product.imageUrls" :key="index">
-                <img :src="img" :alt="product.name" class="product-image" />
-              </Slide>
-              <template #addons>
-                <Navigation />
-                <Pagination />
-              </template>
-            </Carousel>
-          </div>
-          <div class="info-section">
-              <h1>{{ product.name }}</h1>
-              <div class="brand-rating">
-              <span class="brand">{{ product.brand }} ● Оригинал</span>
-              <span class="dot">●</span>
-              <span class="rating">
-                  ⭐ {{ product.rating !== 0 ? product.rating : 'Нет оценок' }}
-              </span>
-              </div>
-
-              <p class="description">{{ product.description }}</p>
-
-              <div class="price-section">
-                  <span class="current-price">{{ formattedPrice }}</span>
-              </div>
-
-              <div class="variants" v-if="product.productVariants?.length">
-                  <h3>Доступные варианты:</h3>
-                  <div class="variant-options">
-                      <button
-                          v-for="(variant, index) in product.productVariants"
-                          :key="index"
-                          class="variant-option"
-                          :class="{ 'selected': selectedVariantId === variant.id }"
-                          @click="selectVariant(variant)"
-                      >
-                          <span>Размер: {{ variant.size }}</span>
-                          <span>Цвет: {{ variant.color }}</span>
-                          <span v-if="variant.quantity > 0" class="in-stock">В наличии: {{ variant.quantity }} шт.</span>
-                          <span v-else class="out-of-stock">Нет в наличии</span>
-                      </button>
-                  </div>
-              </div>
-
-              <div class="actions">
-                  <button 
-                      class="btn" 
-                      @click="addToCart" 
-                      :disabled="!selectedVariantId || isInCart"
-                      :class="{ 'in-cart': isInCart }"
-                  >
-                      {{ isInCart ? '✓ В корзине' : 'Добавить в корзину' }}
-                  </button>
-                  
-                  <button 
-                      class="btn wish" 
-                      @click="toggleWishlist" 
-                      :class="{ 'in-wishlist': isInWishlist }"
-                  >
-                      {{ isInWishlist ? '✓ В избранном' : 'В избранное' }}
-                  </button>
-              </div>
-              
-              <div class="reviews-header">
-                  <h3>Отзывы ({{ product.reviews?.length || 0 }})</h3>
-                  <button class="add-review-btn" @click="scrollToReviewForm">Оставить отзыв</button>
-              </div>
-              
-              <div v-if="product.reviews?.length" class="reviews-section">
-                  <div v-for="(review, i) in product.reviews" :key="i" class="review">
-                      <div class="review-header">
-                          <span class="review-user">{{ review.user }}</span>
-                          <span class="review-date">{{ formatDate(review.createdAt) }}</span>
-                          <span class="review-rating">⭐ {{ review.rating }}</span>
-                      </div>
-                      <p class="review-comment">{{ review.comment }}</p>
-                  </div>
-              </div>
-              <div v-else class="no-reviews">Пока нет отзывов.</div>
-          </div>
-          
-          <div class="add-review" ref="reviewForm">
-            <h3>Оставить отзыв</h3>
-            <div class="rating-stars">
-                <span 
-                    v-for="star in 5" 
-                    :key="star"
-                    class="star"
-                    :class="{ 'filled': star <= newReviewRating }"
-                    @click="newReviewRating = star"
-                    @mouseover="hoverRating = star"
-                    @mouseleave="hoverRating = 0"
-                >
-                    ★
-                </span>
-                <span class="rating-text">
-                    {{ ratingText }}
-                </span>
-            </div>
-            <textarea v-model="newReviewText" placeholder="Ваш отзыв..." rows="3"></textarea>
-            <button class="btn" @click="submitReview" :disabled="!newReviewRating || !newReviewText">Отправить</button>
-        </div>
+    <button class="back-btn" @click="router.back()">← Назад</button>
+    <div class="detail-container">
+      <div class="images-section">
+        <Carousel v-bind="carouselConfig">
+          <Slide v-for="(img, index) in product.imageUrls" :key="index">
+            <img :src="img" :alt="product.name" class="product-image" />
+          </Slide>
+          <template #addons>
+            <Navigation />
+            <Pagination />
+          </template>
+        </Carousel>
       </div>
+      <div class="info-section">
+        <h1>{{ product.name }}</h1>
+        <div class="brand-rating">
+          <span class="brand">{{ product.gender }} ●</span>
+          <span class="brand">{{ product.brand }} ● Оригинал</span>
+          <span class="dot">●</span>
+          <span class="rating">
+            ⭐ {{ product.rating !== 0 ? product.rating : "Нет оценок" }}
+          </span>
+        </div>
+
+        <p class="description">{{ product.description }}</p>
+
+        <div class="price-section">
+          <span class="current-price">{{ formattedPrice }}</span>
+        </div>
+
+        <div class="variants" v-if="product.productVariants?.length">
+          <h3>Доступные варианты:</h3>
+          <div class="variant-options">
+            <button
+              v-for="(variant, index) in product.productVariants.filter(
+                (v) => v.quantity > 0
+              )"
+              :key="index"
+              class="variant-option"
+              :class="{ selected: selectedVariantId === variant.id }"
+              @click="selectVariant(variant)"
+            >
+              <span>Размер: {{ variant.size }}</span>
+              <span>Цвет: {{ variant.color }}</span>
+              <span v-if="variant.quantity > 0" class="in-stock"
+                >В наличии: {{ variant.quantity }} шт.</span
+              >
+              <span v-else class="out-of-stock">Нет в наличии</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button
+            class="btn"
+            @click="addToCart"
+            :disabled="!selectedVariantId || isInCart"
+            :class="{ 'in-cart': isInCart }"
+          >
+            {{ isInCart ? "✓ В корзине" : "Добавить в корзину" }}
+          </button>
+
+          <button
+            class="btn wish"
+            @click="toggleWishlist"
+            :class="{ 'in-wishlist': isInWishlist }"
+          >
+            {{ isInWishlist ? "✓ В избранном" : "В избранное" }}
+          </button>
+        </div>
+
+        <div class="reviews-header">
+          <h3>Отзывы ({{ product.reviews?.length }})</h3>
+          <button
+            class="add-review-btn"
+            @click="scrollToReviewForm"
+            v-if="canReview"
+          >
+            Оставить отзыв
+          </button>
+        </div>
+
+        <div v-if="product.reviews?.length" class="reviews-section">
+          <div v-for="(review, i) in product?.reviews" :key="i" class="review">
+            <div class="review-header">
+              <span class="review-user">{{ review.user?.split(":")[0] }}</span>
+              <span class="review-date">{{
+                formatDate(review.createdAt)
+              }}</span>
+              <span class="review-rating">⭐ {{ review.rating }}</span>
+            </div>
+            <p class="review-comment">{{ review.comment }}</p>
+          </div>
+        </div>
+        <div v-else class="no-reviews">Пока нет отзывов.</div>
+      </div>
+
+      <div class="add-review" ref="reviewForm" v-if="canReview">
+        <h3>Оставить отзыв</h3>
+        <div class="rating-stars">
+          <span
+            v-for="star in 5"
+            :key="star"
+            class="star"
+            :class="{ filled: star <= newReviewRating }"
+            @click="newReviewRating = star"
+            @mouseover="hoverRating = star"
+            @mouseleave="hoverRating = 0"
+          >
+            ★
+          </span>
+          <span class="rating-text">
+            {{ ratingText }}
+          </span>
+        </div>
+        <textarea
+          v-model="newReviewText"
+          placeholder="Ваш отзыв..."
+          rows="3"
+        ></textarea>
+        <button
+          class="btn"
+          @click="submitReview"
+          :disabled="!newReviewRating || !newReviewText"
+        >
+          Отправить
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { LoadProductById, AddReview } from '@/db/api';
-import { cartService } from '@/services/cartService';
-import { favoritesService } from '@/services/favoriteService';
-import NavBar from '@/components/NavBar.vue';
-import router from '@/router';
-import { Carousel, Slide, Navigation, Pagination } from 'vue3-carousel';
-import 'vue3-carousel/dist/carousel.css'
+import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { LoadProductById, AddReview } from "@/db/api";
+import { cartService } from "@/services/cartService";
+import { favoritesService } from "@/services/favoriteService";
+import NavBar from "@/components/NavBar.vue";
+import router from "@/router";
+import axios from "axios";
+import { Carousel, Slide, Navigation, Pagination } from "vue3-carousel";
+import "vue3-carousel/dist/carousel.css";
 
 const route = useRoute();
 const id = route.params.id;
@@ -132,9 +156,10 @@ const cartItems = ref([]);
 const newReviewRating = ref("");
 const newReviewText = ref("");
 const reviewForm = ref(null);
-const currentSlide = ref(0)
+const currentSlide = ref(0);
+const productReviews = ref([]);
 
-const slideTo = (nextSlide) => (currentSlide.value = nextSlide)
+const slideTo = (nextSlide) => (currentSlide.value = nextSlide);
 
 const carouselConfig = {
   // itemsToShow: 2,
@@ -147,60 +172,89 @@ const carouselConfig = {
   wrapAround: true,
   touchDrag: false,
   gap: 10,
-}
+};
 
 const thumbnailsConfig = {
   itemsToShow: 2,
   wrapAround: true,
   touchDrag: false,
   gap: 10,
-}
+};
+
+const canReview = ref(false);
 
 const loadData = async () => {
   try {
     product.value = await LoadProductById(id);
-    
+
     if (product.value.productVariants?.length) {
-      const availableVariant = product.value.productVariants.find(v => v.quantity > 0);
+      const availableVariant = product.value.productVariants.find(
+        (v) => v.quantity > 0
+      );
       if (availableVariant) selectVariant(availableVariant);
     }
-    
+
     await checkCartStatus();
     await checkWishlistStatus();
+    await checkReviewEligibility();
   } catch (error) {
-    console.error('Ошибка загрузки данных:', error);
+    console.error("Ошибка загрузки данных:", error);
+  }
+};
+
+const checkReviewEligibility = async () => {
+  try {
+    const response = await axios.get(
+      `http://localhost:8080/api/v1/reviews/hasUserPurchased/${product.value.id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log(response);
+
+    canReview.value = response.data;
+  } catch (error) {
+    console.warn("Не удалось проверить покупку пользователя:", error);
+    canReview.value = false;
   }
 };
 
 const checkCartStatus = async () => {
   try {
     cartItems.value = await cartService.getCart();
-    
-    isInCart.value = cartItems.value.cartItems
-      .some(item => item.productVariant.id === selectedVariantId.value);
+
+    isInCart.value = cartItems.value.cartItems.some(
+      (item) => item.productVariant.id === selectedVariantId.value
+    );
   } catch (error) {
-    console.error('Ошибка проверки корзины:', error);
+    console.error("Ошибка проверки корзины:", error);
   }
 };
 
 const checkWishlistStatus = async () => {
   try {
     const favorites = await favoritesService.getFavorites();
-    isInWishlist.value = favorites.products.some(fav => fav.id === product.value.id);
+    isInWishlist.value = favorites.products.some(
+      (fav) => fav.id === product.value.id
+    );
   } catch (error) {
-    console.error('Ошибка проверки избранного:', error);
+    console.error("Ошибка проверки избранного:", error);
   }
 };
 
 const addToCart = async () => {
   if (!selectedVariantId.value) return;
-  
+
   try {
     await cartService.updateItem(selectedVariantId.value, 1);
     isInCart.value = true;
     cartItems.value = await cartService.getCart();
   } catch (error) {
-    console.error('Ошибка добавления в корзину:', error);
+    console.error("Ошибка добавления в корзину:", error);
   }
 };
 
@@ -213,7 +267,7 @@ const toggleWishlist = async () => {
     }
     isInWishlist.value = !isInWishlist.value;
   } catch (error) {
-    console.error('Ошибка обновления избранного:', error);
+    console.error("Ошибка обновления избранного:", error);
   }
 };
 
@@ -221,8 +275,9 @@ const selectVariant = (variant) => {
   selectedVariantId.value = variant.id;
   selectedVariant.value = variant;
   try {
-    isInCart.value = cartItems.value.cartItems
-      .some(item => item.productVariant.id === selectedVariantId.value);
+    isInCart.value = cartItems.value.cartItems.some(
+      (item) => item.productVariant.id === selectedVariantId.value
+    );
   } catch (error) {
     console.log(error);
   }
@@ -231,51 +286,55 @@ const selectVariant = (variant) => {
 onMounted(loadData);
 
 const formattedPrice = computed(() => {
-  return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      maximumFractionDigits: 2
+  return new Intl.NumberFormat("ru-RU", {
+    style: "currency",
+    currency: "RUB",
+    maximumFractionDigits: 2,
   }).format(product.value.price);
 });
 
 const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('ru-RU', {
-          day: 'numeric',
-          month: 'long',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
+  return new Date(dateString).toLocaleDateString("ru-RU", {
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const scrollToReviewForm = () => {
-  reviewForm.value?.scrollIntoView({ behavior: 'smooth' });
+  reviewForm.value?.scrollIntoView({ behavior: "smooth" });
 };
 
 const submitReview = async () => {
   if (newReviewText.value && newReviewRating.value) {
-      console.log('Отправлен отзыв:', {
-          comment: newReviewText.value,
-          rating: newReviewRating.value
-      });
-      try {
-        await AddReview(product.value.id, newReviewText.value, newReviewRating.value);
-        console.log("Отзыв добавлен");
-        loadData();
-      } catch (error) {
-        throw error;
-      }
-      newReviewText.value = '';
-      newReviewRating.value = '';
+    console.log("Отправлен отзыв:", {
+      comment: newReviewText.value,
+      rating: newReviewRating.value,
+    });
+    try {
+      await AddReview(
+        product.value.id,
+        newReviewText.value,
+        newReviewRating.value
+      );
+      console.log("Отзыв добавлен");
+      loadData();
+    } catch (error) {
+      throw error;
+    }
+    newReviewText.value = "";
+    newReviewRating.value = "";
   }
 };
 
 const hoverRating = ref(0);
 
 const ratingText = computed(() => {
-    if (!newReviewRating.value && !hoverRating.value) return 'Оцените товар';
-    const rating = hoverRating.value || newReviewRating.value;
-    const texts = ['Ужасно', 'Плохо', 'Нормально', 'Хорошо', 'Отлично'];
-    return texts[rating - 1];
+  if (!newReviewRating.value && !hoverRating.value) return "Оцените товар";
+  const rating = hoverRating.value || newReviewRating.value;
+  const texts = ["Ужасно", "Плохо", "Нормально", "Хорошо", "Отлично"];
+  return texts[rating - 1];
 });
 </script>
 
@@ -442,7 +501,7 @@ h1 {
 
 .btn:hover:not(:disabled) {
   background-color: #3d8b40;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .btn:disabled {
@@ -576,36 +635,36 @@ h1 {
 }
 
 .rating-stars {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-bottom: 15px;
-    font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 15px;
+  font-size: 24px;
 }
 
 .star {
-    color: #ddd;
-    cursor: pointer;
-    transition: color 0.2s;
-    position: relative;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.2s;
+  position: relative;
 }
 
 .star.filled {
-    color: #ffc107;
+  color: #ffc107;
 }
 
 .star:hover {
-    color: #ffc107;
+  color: #ffc107;
 }
 
 .rating-text {
-    margin-left: 10px;
-    font-size: 14px;
-    color: #666;
+  margin-left: 10px;
+  font-size: 14px;
+  color: #666;
 }
 
 .star:hover ~ .star {
-    color: #ddd;
+  color: #ddd;
 }
 
 .btn.in-cart {

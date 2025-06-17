@@ -71,6 +71,15 @@ export const LoadColors = async () => {
     }
 }
 
+export async function HasUserPurchased(productId) {
+  const res = await fetch(`"http://localhost:8080/api/v1/reviews/hasUserPurchased/${productId}`, {
+    credentials: 'include',
+  }, headers)
+  ;
+  if (!res.ok) throw new Error('Ошибка проверки покупки');
+  return await res.json();
+}
+
 export const AddReview = async (productId, comment, rating) => {
     try {
         const token = localStorage.getItem('token');

@@ -9,7 +9,6 @@ export const authService = {
       const response = await axios.post(`${API_URL}/sign_in`, credentials);
       localStorage.setItem('token', response.data.token);
       const decoded = jwtDecode(response.data.token);
-      console.log(decoded);
 
       if (decoded.role === 'ROLE_ADMIN') {
         console.log('Вы вошли как администратор');

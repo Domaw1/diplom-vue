@@ -9,7 +9,11 @@
             <div class="item-name">
               {{ item.productVariant.product.name }} ({{ item.productVariant.size }})
             </div>
-            <div class="item-quantity">×{{ item.quantity }}</div>
+            <div class="item-quantity">
+              <p>
+                  {{ item.productVariant.product.price }}.00 x {{ item.quantity }}
+              </p>
+            </div>
             <div class="item-price">{{ itemTotal(item) }} ₽</div>
           </div>
         </div>

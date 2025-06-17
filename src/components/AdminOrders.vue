@@ -1,50 +1,80 @@
 <template>
-    <div class="sorting-controls">
-        <label>
-            Сортировать по:
-            <select v-model="sortBy">
-            <option value="id">ID</option>
-            <option value="orderStatus">Статус</option>
-            <option value="total">Итог</option>
-            </select>
-        </label>
+  <div class="filter-controls">
+  <label>
+    Фильтр по ID:
+    <input type="number" v-model.number="filterId" placeholder="Введите ID" min="0" />
+  </label>
 
-        <label>
-            Порядок:
-            <select v-model="sortDirection">
-            <option value="asc">По возрастанию</option>
-            <option value="desc">По убыванию</option>
-            </select>
-        </label>
-    </div>
-    <div class="admin-orders">
-      <h1>Заказы</h1>
-      <div v-if="loading">Загрузка...</div>
-      <div v-else>
-        <div v-for="order in sortedOrders" :key="order.id" class="order-card">
-          <p><strong>ID заказа:</strong> {{ order.id }}</p>
-          <p><strong>Пользователь:</strong> {{ order.user }}</p>
-          <p><strong>Дата заказа:</strong> {{ formatDate(order.createdAt) }}</p>
+  <label>
+    Фильтр по статусу:
+    <select v-model="filterStatus">
+      <option value="">Все</option>
+      <option value="NEW">Новый</option>
+      <option value="DELIVERED">Вручен</option>
+      <option value="CANCELED">Отменен</option>
+    </select>
+  </label>
 
-          <p><strong>Содержимое заказа:</strong></p>
-          <ul class="order-items-list">
-            <li v-for="(item, index) in order.orderItems" :key="index">
-              {{ item.name }} — {{ item.quantity }} шт. × {{ formatPrice(item.productVariant.product.price) }}
-            </li>
-          </ul>
-          <p><strong>Статус:</strong> 
-            <select v-model="order.orderStatus" @change="updateStatus(order)">
-              <option value="NEW">Новый</option>
-              <option value="DELIVERED">Получен</option>
-              <option value="CANCELED">Отменен</option>
-            </select>
-          </p>
-          <p><strong>Итог:</strong> {{ formatPrice(order.total) }}</p>
-        </div>
+  <label>
+    Итог больше:
+    <input
+      type="number"
+      v-model.number="filterMinTotal"
+      placeholder="0"
+      min="0"
+    />
+  </label>
+
+  <label>
+    Итог меньше:
+    <input
+      type="number"
+      v-model.number="filterMaxTotal"
+      placeholder="∞"
+      min="0"
+    />
+  </label>
+
+  <button @click="resetFilters" class="reset-btn">Сбросить фильтры</button>
+</div>
+
+
+  <div class="admin-orders">
+    <h1>Заказы</h1>
+    <div v-if="loading">Загрузка...</div>
+    <div v-else>
+      <div v-if="filteredOrders.length === 0">Нет заказов по заданным фильтрам.</div>
+      <div v-for="order in filteredOrders" :key="order.id" class="order-card">
+        <p><strong>ID заказа:</strong> {{ order.id }}</p>
+        <p><strong>Пользователь:</strong> {{ order.user }}</p>
+        <p><strong>Дата заказа:</strong> {{ formatDate(order.createdAt) }}</p>
+
+        <p><strong>Содержимое заказа:</strong></p>
+        <ul class="order-items-list">
+          <li v-for="(item, index) in order.orderItems" :key="index">
+            {{ item.name }} — {{ item.quantity }} шт. × {{ formatPrice(item.productVariant.product.price) }}
+          </li>
+        </ul>
+
+        <p><strong>Статус:</strong> 
+          <select
+            v-model="order.orderStatus"
+            @change="updateStatus(order)"
+            :disabled="order.orderStatus === 'DELIVERED'"
+          >
+            <option value="NEW">Новый</option>
+            <option value="DELIVERED">Вручен</option>
+            <option value="CANCELED">Отменен</option>
+          </select>
+        </p>
+
+        <p><strong>Итог:</strong> {{ formatPrice(order.total) }}</p>
       </div>
     </div>
-  </template>
-  
+  </div>
+</template>
+
+
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { orderService } from '@/services/orderService';
@@ -54,9 +84,59 @@ const orders = ref([]);
 const loading = ref(true);
 const toast = useToast();
 
-const sortBy = ref('id');
+// Фильтры
+const filterId = ref(null);
+const filterStatus = ref('');
+const filterMinTotal = ref(null);
+const filterMaxTotal = ref(null);
 
-const sortDirection = ref('asc');
+const filteredOrders = computed(() => {
+  return orders.value.filter(order => {
+    const matchesId = filterId.value === null || order.id === filterId.value;
+    const matchesStatus = !filterStatus.value || order.orderStatus === filterStatus.value;
+    const matchesMin = filterMinTotal.value === null || order.total >= filterMinTotal.value;
+    const matchesMax = filterMaxTotal.value === null || order.total <= filterMaxTotal.value;
+
+    return matchesId && matchesStatus && matchesMin && matchesMax;
+  });
+});
+
+onMounted(async () => {
+  await loadOrders();
+});
+
+const loadOrders = async () => {
+  loading.value = true;
+  try {
+    const response = await orderService.getAllOrders();
+    orders.value = response;
+  } catch (err) {
+    toast.error("Ошибка загрузки заказов", { timeout: 3000 });
+  } finally {
+    loading.value = false;
+  }
+};
+
+const updateStatus = async (order) => {
+  try {
+    await orderService.updateOrderStatus({
+      orderStatus: order.orderStatus,
+      orderId: order.id
+    });
+    toast.success("Статус обновлен", { timeout: 3000 });
+  } catch (err) {
+    toast.error("Ошибка обновления статуса", { timeout: 3000 });
+  }
+};
+
+const resetFilters = () => {
+  filterId.value = null;
+  filterStatus.value = '';
+  filterMinTotal.value = null;
+  filterMaxTotal.value = null;
+};
+
+
 const formatDate = (dateString) => {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('ru-RU', {
@@ -68,60 +148,11 @@ const formatDate = (dateString) => {
   }).format(date);
 };
 
-const sortedOrders = computed(() => {
-  return [...orders.value].sort((a, b) => {
-  const aValue = a[sortBy.value];
-  const bValue = b[sortBy.value];
-  if (typeof aValue === 'number' && typeof bValue === 'number') {
-  return sortDirection.value === 'asc' ? aValue - bValue : bValue - aValue;
-}
-
-return sortDirection.value === 'asc'
-? String(aValue).localeCompare(String(bValue))
-: String(bValue).localeCompare(String(aValue));
-});
-});
-
-onMounted(async () => {
-await loadOrders();
-});
-
-const loadOrders = async () => {
-loading.value = true;
-try {
-    const response = await orderService.getAllOrders();
-    orders.value = response;
-} catch (err) {
-    toast.error("Ошибка загрузки заказов", {
-    timeout: 3000
-    });
-} finally {
-    loading.value = false;
-}
-};
-
-const updateStatus = async (order) => {
-try {
-    const data = {
-        orderStatus: order.orderStatus,
-        orderId: order.id
-    }
-    await orderService.updateOrderStatus(data);
-    toast.success("Статус обновлен", {
-        timeout: 3000
-    });
-    } catch (err) {
-        toast.error("Ошибка обновления статуса", {
-            timeout: 3000
-        });
-}
-};
-
 const formatPrice = (price) => {
-return new Intl.NumberFormat('ru-RU', {
+  return new Intl.NumberFormat('ru-RU', {
     style: 'currency',
     currency: 'RUB'
-}).format(price);
+  }).format(price);
 };
 </script>
 
@@ -185,27 +216,68 @@ return new Intl.NumberFormat('ru-RU', {
   border-color: #2196f3;
   outline: none;
 }
-.sorting-controls {
+
+.filter-controls {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  align-items: center;
   justify-content: center;
-  margin-top: 20px;
+  margin: 1.5rem 0;
 }
 
-.sorting-controls label {
+.filter-controls label {
   font-size: 1rem;
   color: #333;
 }
 
-.sorting-controls select {
+.filter-controls select {
   margin-left: 0.5rem;
   padding: 0.4rem 0.6rem;
   font-size: 1rem;
   border-radius: 4px;
   border: 1px solid #ccc;
 }
-</style>
 
-  
+.filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.filter-controls label {
+  font-size: 1rem;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.filter-controls input,
+.filter-controls select {
+  margin-top: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 180px;
+}
+
+.reset-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  align-self: flex-end;
+  margin-top: auto;
+  height: fit-content;
+  transition: background-color 0.2s;
+}
+
+.reset-btn:hover {
+  background-color: #d32f2f;
+}
+
+</style>
