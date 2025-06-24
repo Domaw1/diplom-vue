@@ -1,12 +1,12 @@
 <template>
   <div class="filter-controls">
   <label>
-    Фильтр по ID:
+    ID:
     <input type="number" v-model.number="filterId" placeholder="Введите ID" min="0" />
   </label>
 
   <label>
-    Фильтр по статусу:
+    Статус:
     <select v-model="filterStatus">
       <option value="">Все</option>
       <option value="NEW">Новый</option>
